@@ -18,7 +18,8 @@
 
   let img = new Image();
   let rotation = 0;
-  let zoom = 1;
+  let zoom = 0.3;
+  const DEFAULT_ZOOM = 0.3;
   let drawing = false;
   let currentTool = "pen";
   let currentColor = "#111111";
@@ -395,7 +396,7 @@
       if ([0, 90, 180, 270].includes(savedRot)) rotation = savedRot;
       else rotation = (data.autoLandscape && img.naturalHeight > img.naturalWidth) ? 90 : 0;
       loadStrokes();
-      fitZoom();
+      zoom = DEFAULT_ZOOM;
       render();
       shell.scrollTo({ top: 0, left: 0 });
     };
@@ -409,7 +410,7 @@
   function rotate(delta) {
     rotation = (rotation + delta + 360) % 360;
     localStorage.setItem(rotationKey(), String(rotation));
-    fitZoom(); render();
+    zoom = DEFAULT_ZOOM; render();
   }
 
   /* ----- Undo / Redo ----- */
