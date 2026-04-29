@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "patentdoc-conv"
+version = "3.1.0"
+description = "審査用 TXT / IMG 一括 HTML・PDF 化ツール (CLI + GUI)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "toHTML_PDF Tool" }]
+keywords = ["html", "pdf", "patent", "viewer", "tkinter"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Environment :: X11 Applications :: Qt",
+]
+dependencies = [
+    "pillow>=10.0",
+    "playwright>=1.40",
+]
+
+[project.optional-dependencies]
+gui = []
+
+[project.scripts]
+patentdoc-conv = "patentdoc_conv.cli:main"
+
+[project.gui-scripts]
+patentdoc-conv-gui = "patentdoc_conv.gui:run_app"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"patentdoc_conv.assets" = ["*.css", "*.js"]

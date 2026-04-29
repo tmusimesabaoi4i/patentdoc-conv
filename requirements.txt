@@ -1,0 +1,5 @@
+# patentdoc-conv: 審査用 TXT/IMG → HTML/PDF 変換ツール
+# HTML生成のみなら標準ライブラリで動きます (tkinter は CPython 標準同梱)。
+# PDF生成には playwright と pillow が必要です。
+pillow>=10.0
+playwright>=1.40

@@ -1,0 +1,5 @@
+[console_scripts]
+patentdoc-conv = patentdoc_conv.cli:main
+
+[gui_scripts]
+patentdoc-conv-gui = patentdoc_conv.gui:run_app

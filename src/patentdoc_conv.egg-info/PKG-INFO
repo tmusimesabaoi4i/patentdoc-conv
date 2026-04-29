@@ -1,0 +1,236 @@
+Metadata-Version: 2.4
+Name: patentdoc-conv
+Version: 3.1.0
+Summary: 審査用 TXT / IMG 一括 HTML・PDF 化ツール (CLI + GUI)
+Author: toHTML_PDF Tool
+License: MIT
+Keywords: html,pdf,patent,viewer,tkinter
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Operating System :: OS Independent
+Classifier: Environment :: Console
+Classifier: Environment :: X11 Applications :: Qt
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: pillow>=10.0
+Requires-Dist: playwright>=1.40
+Provides-Extra: gui
+
+# patentdoc-conv — 審査用 TXT / IMG 一括 HTML・PDF 化ツール
+
+## 1. 目的
+
+`TXT` フォルダ直下のテキストファイルと、`IMG` フォルダ直下の図面画像を、審査で見やすいローカルHTMLとPDFに一括変換します。
+
+特に、以下を重視しています。
+
+- **HTMLは完全ローカル実行**：外部CDN・外部通信なし
+- **表示は白黒ベースでシンプル**：紙のように集中して読める画面
+- **テキストHTMLは6色キーワード・手動マーカー・自動目次・段落ジャンプ・メモ・しおり・文中検索に対応**
+- **図面HTMLは複数ツール（ペン/蛍光/直線/矩形/楕円/矢印/テキスト/消しゴム）、Undo/Redo、PNG保存、JSONエクスポート/インポートに対応**
+- **既にHTML/PDFがある場合は既定で上書き**
+
+---
+
+## 2. 想定フォルダ構成
+
+変換対象の親フォルダを1つ用意し、その直下に `TXT` と `IMG` を置きます。
+
+```text
+指定ディレクトリ/
+├─ TXT/
+│  ├─ 特願xxxx_明細書.txt
+│  ├─ 特願xxxx_特許請求の範囲.txt
+│  └─ ...
+├─ IMG/
+│  ├─ 特願xxxx_図面_図1.png
+│  ├─ 特願xxxx_図面_図2.png
+│  └─ ...
+├─ HTML/   ← 自動作成・上書き
+└─ PDF/    ← 自動作成・上書き
+```
+
+---
+
+## 3. インストール
+
+```bat
+cd patentdoc-conv
+python -m pip install -e .
+python -m playwright install chromium
+```
+
+PDFを作らずHTMLだけ作る場合は、PlaywrightのChromiumインストールは不要です。
+
+---
+
+## 4. 基本実行
+
+### 4.1 すべて処理（TXT + IMG）
+
+```bat
+patentdoc-conv run --dir "C:\work\patent_case"
+```
+
+### 4.2 テキストのみ処理
+
+```bat
+patentdoc-conv --run text --dir "C:\work\patent_case"
+```
+
+### 4.3 画像のみ処理
+
+```bat
+patentdoc-conv --run img --dir "C:\work\patent_case"
+```
+
+### 4.4 GUIアプリ
+
+```bat
+patentdoc-conv --gui
+```
+
+または同梱バッチ:
+
+```bat
+patentdoc-conv-gui.bat
+```
+
+---
+
+## 5. 出力されるHTML
+
+```text
+HTML/
+├─ index.html          入口。index_all.htmlへ転送
+├─ index_all.html      テキスト・図面の総合入口
+├─ index_text.html     テキスト文献ビューア
+├─ index_fig.html      図面ビューア
+├─ text/
+│  ├─ 各テキスト.html
+│  └─ ...
+├─ fig/
+│  ├─ 各図面.html
+│  └─ ...
+└─ assets/
+   ├─ css/js
+   └─ img/             HTML表示用にコピーした画像
+```
+
+---
+
+## 6. テキストビューアの機能
+
+| カテゴリ | 機能 |
+|---|---|
+| 文献ナビ | 前/次（`[` `]` `←` `→`）、選択ドロップダウン |
+| キーワード色付け | 6色（赤/青/黄/緑/紫/橙）、入力毎にライブハイライト |
+| 手動マーカー | テキスト選択後に `1`〜`6` で色を付ける、`0` で解除 |
+| メモ | テキスト選択後に `c` でコメント。アンダーライン＋ホバーで表示 |
+| 自動目次 | 特許文書の `【発明の名称】` などを自動抽出。サイドバーからジャンプ |
+| 段落ジャンプ | `g` で `【0023】` のような段落番号にジャンプ |
+| しおり | `Shift+B` で現在位置を保存 |
+| 文中検索 | `Ctrl+F` で検索バー、`Enter`/`Shift+Enter` で前後移動 |
+| 表示設定 | `s` でフォントサイズ/行間/本文幅/書体/ダーク/紙(セピア) |
+| 集中モード | `z` でバー類を全部隠す |
+| ヘルプ | `?` で全ショートカット一覧 |
+
+---
+
+## 7. 図面ビューアの機能
+
+| カテゴリ | 機能 |
+|---|---|
+| 図ナビ | 前/次（`[` `]` `←` `→`）、選択ドロップダウン |
+| 表示 | 左/右回転、横幅フィット（`f`）、`+`/`-` ズーム |
+| 描画ツール | ペン/蛍光ペン/直線/矩形/楕円/矢印/テキスト注釈/消しゴム/手のひら |
+| 色 | 黒・赤・青・黄・緑・紫の6色 + 太さスライダー |
+| Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` |
+| 保存 | PNG保存（`Ctrl+S`）、書き込みJSONエクスポート/インポート |
+| ダーク反転 | `d` で画像を反転表示 |
+| 集中モード | `z` でツールバーを薄く |
+| ヘルプ | `?` で全ショートカット一覧 |
+
+---
+
+## 8. 出力されるPDF
+
+```text
+PDF/
+├─ text/
+│  ├─ 各テキスト.pdf
+│  └─ ...
+├─ fig/
+│  ├─ 各図面.pdf
+│  └─ ...
+└─ conversion_report.json
+```
+
+---
+
+## 9. よく使うオプション
+
+### HTMLだけ作る
+
+```bat
+patentdoc-conv run --dir "C:\work\patent_case" --skip-pdf
+```
+
+### 出力先を完全に作り直す
+
+```bat
+patentdoc-conv run --dir "C:\work\patent_case" --clean
+```
+
+### 既存ファイルを上書きしない
+
+```bat
+patentdoc-conv run --dir "C:\work\patent_case" --no-overwrite
+```
+
+### 画像PDFも横長に回転する
+
+```bat
+patentdoc-conv run --dir "C:\work\patent_case" --pdf-image-orientation landscape
+```
+
+### HTMLで縦長画像を自動回転しない
+
+```bat
+patentdoc-conv run --dir "C:\work\patent_case" --no-auto-landscape-html
+```
+
+---
+
+## 10. 対応拡張子
+
+### テキスト
+
+```text
+.txt
+```
+
+### 画像
+
+```text
+.png .jpg .jpeg .webp .bmp .gif .tif .tiff
+```
+
+---
+
+## 11. 注意点
+
+- **ローカルHTML**: `file:///.../HTML/index_all.html` のように直接開く前提。外部通信なし。
+- **図面書き込み**: ブラウザのローカル保存領域に保持。重要な書き込みは `PNG保存` で保存推奨。
+- **PDF生成失敗時**: `python -m playwright install chromium` を確認。または `--skip-pdf` でHTMLのみ作成。
+
+---
+
+## 12. 最小コマンド集
+
+```bat
+cd patentdoc-conv
+python -m pip install -e .
+python -m playwright install chromium
+patentdoc-conv run --dir "C:\work\patent_case"
+```
