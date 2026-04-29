@@ -8,6 +8,7 @@
 
 ```bat
 cd patentdoc-conv
+cd src
 python -m pip install -e .
 python -m playwright install chromium
 
