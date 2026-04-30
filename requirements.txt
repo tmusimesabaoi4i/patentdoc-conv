@@ -1,0 +1,8 @@
+# patentdoc-conv: 審査用 TXT/IMG → HTML/PDF 変換 GUI アプリ
+# tkinter は CPython 標準同梱のため記載不要。
+
+# PDF 生成 (テキスト + 画像)
+reportlab>=4.0
+
+# 画像処理
+pillow>=10.0

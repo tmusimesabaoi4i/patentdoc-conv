@@ -1,0 +1,156 @@
+/* =========================================================================
+ *  fig_viewer.css
+ *  紙のような余白と、ベクター描画用ツールバー
+ * ========================================================================= */
+
+body.figBody { overflow: hidden; background: #fafafa; }
+body.figBody.dark { background: #111; color: #e8e8e8; }
+
+.figBody .topbar { overflow-x: auto; }
+body.figBody.dark .topbar { background: #161616; border-bottom-color: #2a2a2a; }
+body.figBody.dark .topbar select,
+body.figBody.dark .topbar input,
+body.figBody.dark .topbar button { background: #181818; color: #e8e8e8; border-color: #333; }
+
+.figShell {
+  height: calc(100vh - 40px);
+  overflow: auto;
+  background: inherit;
+}
+.canvasWrap {
+  min-height: calc(100vh - 42px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 18px 20px 70px;
+  position: relative;
+}
+
+#figCanvas {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--line);
+  cursor: crosshair;
+  image-rendering: auto;
+  touch-action: none;
+}
+body.figBody.dark #figCanvas { filter: invert(1) hue-rotate(180deg); border-color: #333; }
+body.figBody.tool-pan #figCanvas { cursor: grab; }
+body.figBody.tool-pan.panning #figCanvas { cursor: grabbing; }
+body.figBody.tool-erase #figCanvas { cursor: cell; }
+body.figBody.tool-text #figCanvas { cursor: text; }
+
+/* ----- ツールボタン群 -------------------------------------------------- */
+
+.toolBtn {
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
+  font-weight: 600;
+}
+.toolBtn.active {
+  background: #111;
+  color: #fff;
+}
+body.figBody.dark .toolBtn.active { background: #fafafa; color: #111; }
+
+.toolColor {
+  width: 22px;
+  min-width: 22px;
+  padding: 0;
+  border-radius: 0;
+}
+.toolColor[data-color="#111111"] { background: #111; }
+.toolColor[data-color="#cc0000"] { background: #cc0000; }
+.toolColor[data-color="#0058ff"] { background: #0058ff; }
+.toolColor[data-color="#ffd200"] { background: #ffd200; }
+.toolColor[data-color="#1e9e4a"] { background: #1e9e4a; }
+.toolColor[data-color="#8a2cd1"] { background: #8a2cd1; }
+.toolColor.active { outline: 2px solid #111; outline-offset: 2px; }
+body.figBody.dark .toolColor.active { outline-color: #fafafa; }
+
+#brushSize { width: 70px; min-width: 70px; }
+
+.toolDivider {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  background: var(--line);
+  margin: 0 4px;
+}
+
+/* ----- 画像上に重ねる入力ボックス（テキスト注釈の編集用） -------------- */
+
+.canvasOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.textInputOverlay {
+  position: absolute;
+  pointer-events: auto;
+  border: 1px dashed #111;
+  background: #ffffffea;
+  font-size: 14px;
+  padding: 2px 4px;
+  resize: none;
+  outline: none;
+}
+body.figBody.dark .textInputOverlay { background: #181818ea; color: #e8e8e8; border-color: #aaa; }
+
+/* ----- ヘルプ・ダイアログ --------------------------------------------- */
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.32);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dialog.hidden { display: none; }
+.dialog .dialogBox {
+  background: #fff;
+  border: 1px solid var(--line);
+  width: min(560px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  padding: 18px 22px;
+}
+body.figBody.dark .dialog .dialogBox { background: #181818; border-color: #2a2a2a; color: #e8e8e8; }
+.dialog .dialogBox h3 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+.dialog .dialogBox .actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 14px; }
+
+.kbdTable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.kbdTable th, .kbdTable td { padding: 5px 8px; border-top: 1px solid var(--line-soft); text-align: left; }
+.kbdTable th { color: var(--muted); font-weight: 500; width: 36%; }
+body.figBody.dark .kbdTable th, body.figBody.dark .kbdTable td { border-top-color: #232323; }
+kbd {
+  display: inline-block;
+  padding: 0 5px;
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  margin: 0 1px;
+  background: rgba(0,0,0,.02);
+}
+body.figBody.dark kbd { background: rgba(255,255,255,.05); border-color: #333; }
+
+/* ----- 集中モード ----------------------------------------------------- */
+
+body.figBody.zen .topbar { opacity: .04; transition: opacity .15s; }
+body.figBody.zen .topbar:hover { opacity: 1; }
+
+@media (max-width: 900px) {
+  .topbar { overflow-x: auto; }
+  .titleText { max-width: 24vw; }
+}
+@media print {
+  body.figBody { overflow: visible; }
+  .figShell { height: auto; overflow: visible; }
+  .canvasWrap { padding: 0; min-height: 0; display: block; }
+  #figCanvas { border: none; max-width: 100%; height: auto; filter: none; }
+}

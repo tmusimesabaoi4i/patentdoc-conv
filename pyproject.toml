@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "patentdoc-conv"
+version = "4.0.0"
+description = "審査用 TXT / IMG 一括 HTML・PDF 化 GUI ツール"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "patentdoc-conv" }]
+keywords = ["html", "pdf", "patent", "viewer", "tkinter", "gui", "reportlab"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+]
+dependencies = [
+    "pillow>=10.0",
+    "reportlab>=4.0",
+]
+
+[project.gui-scripts]
+patentdoc-conv = "patentdoc_conv.gui.main_window:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"patentdoc_conv.assets" = ["*.css", "*.js"]
