@@ -1,0 +1,281 @@
+Metadata-Version: 2.4
+Name: patentdoc-conv
+Version: 4.0.0
+Summary: 審査用 TXT / IMG 一括 HTML・PDF 化 GUI ツール
+Author: patentdoc-conv
+License: MIT
+Keywords: html,pdf,patent,viewer,tkinter,gui,reportlab
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Operating System :: OS Independent
+Classifier: Environment :: Win32 (MS Windows)
+Classifier: Intended Audience :: End Users/Desktop
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pillow>=10.0
+Requires-Dist: reportlab>=4.0
+
+# patentdoc-conv
+
+審査用 **TXT / IMG** を一括で **HTML / PDF** 化する Windows 向けデスクトップ GUI アプリ。
+
+- TXT ファイルを 6 色キーワードハイライトつきの読みやすい HTML ビューアに変換
+- IMG ファイルをペン・蛍光ペン・矢印などで書き込める HTML 図面ビューアに変換
+- PDF は **ReportLab で直接生成**（ブラウザエンジン不要）
+- 画面は tkinter 製のシンプルな単一ウィンドウ
+- PyInstaller で **単一 exe (`PatentdocConv.exe`) として配布可能**（配布先に Python 不要）
+
+---
+
+## ディレクトリ構成
+
+```text
+patentdoc-conv/
+├─ README.md
+├─ pyproject.toml
+├─ requirements.txt
+├─ PatentdocConv.spec        # PyInstaller 設定 (推奨ビルド方法)
+├─ build_exe.bat             # exe ビルド補助スクリプト
+├─ src/
+│  └─ patentdoc_conv/
+│     ├─ __init__.py
+│     ├─ __main__.py         # 絶対 import で書かれたエントリ (PyInstaller 安全)
+│     ├─ gui/
+│     │  ├─ __init__.py
+│     │  └─ main_window.py
+│     ├─ core/
+│     │  ├─ __init__.py
+│     │  ├─ service.py        # GUI から呼ばれる業務ロジック (run_build)
+│     │  ├─ document_loader.py
+│     │  ├─ html_generator.py
+│     │  ├─ pdf_generator.py  # PDF 生成 (ReportLab)
+│     │  ├─ models.py
+│     │  └─ templates.py
+│     └─ assets/
+│        ├─ common.css
+│        ├─ text_viewer.css / .js
+│        └─ fig_viewer.css / .js
+├─ tests/
+├─ build/                     # PyInstaller の作業ディレクトリ
+├─ dist/                      # PyInstaller の出力先 (PatentdocConv.exe)
+└─ archive/                   # 旧 CLI など参考用
+```
+
+---
+
+## 1. セットアップ (Windows / cmd or PowerShell)
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -e .
+```
+
+requirements.txt 経由で依存だけ入れたい場合:
+
+```bat
+python -m pip install -r requirements.txt
+```
+
+---
+
+## 2. GUI の起動 (開発時)
+
+```bat
+python -m patentdoc_conv
+```
+
+起動すると単一ウィンドウが開きます。
+
+1. 「対象ディレクトリ」に **TXT/** と **IMG/** を含む親フォルダを指定
+2. 必要に応じて文字コード／PDF 向きなどを設定
+3. **実行** ボタンを押すとログ欄に進捗が流れます
+4. 終わったら **index_all.html を開く** で結果を確認
+
+`pip install -e .` を行った環境では、`patentdoc-conv` コマンドからも GUI を起動できます (Windows ではコンソールが開きません)。
+
+```bat
+patentdoc-conv
+```
+
+---
+
+## 3. 想定する入力フォルダ
+
+```text
+指定ディレクトリ/
+├─ TXT/    ← 変換元テキスト (.txt)
+├─ IMG/    ← 変換元画像 (.png .jpg .jpeg .webp .bmp .gif .tif .tiff)
+├─ HTML/   ← 自動生成
+└─ PDF/    ← 自動生成
+```
+
+---
+
+## 4. PDF 生成について
+
+本アプリでは、PDF 生成に **Playwright / Chromium は使用しません**。
+
+PDF は `reportlab` により直接生成します。そのため、以下のような追加コマンドは不要です：
+
+```bat
+REM 不要 (このコマンドは実行しなくて OK)
+python -m playwright install chromium
+```
+
+GUI アプリを起動し、**実行** ボタンを押すことで HTML と PDF の両方が作成されます。
+「HTMLのみ作成（PDFをスキップ）」にチェックを入れると、PDF 生成をスキップできます。
+
+### 日本語フォントについて
+
+PDF 生成時には Windows にインストールされている日本語フォントを自動的に検出して使用します。
+
+- Yu Gothic (`C:\Windows\Fonts\YuGothM.ttc`) ← Windows 8.1 以降標準
+- Meiryo (`C:\Windows\Fonts\meiryo.ttc`) ← Windows Vista 以降標準
+- MS Gothic (`C:\Windows\Fonts\msgothic.ttc`) ← Windows XP 以降標準
+
+**通常の Windows 環境ならいずれかが入っているため、配布先で追加作業は不要**です。
+万が一どれも見つからない場合は GUI のログ欄にエラーメッセージが表示されます。
+
+---
+
+## 5. exe 形式でビルドする方法 (PyInstaller)
+
+ビルド前にまず `python -m patentdoc_conv` で通常起動できることを確認してください。
+
+### 推奨方法 (spec ファイル経由)
+
+依存ライブラリ (reportlab / PIL) の隠れインポートを確実に取り込むため、付属の
+`PatentdocConv.spec` を使ったビルドを推奨します。
+
+```bat
+python -m pip install pyinstaller
+python -m PyInstaller --noconfirm --clean PatentdocConv.spec
+```
+
+または bat スクリプトを実行するだけでも構いません:
+
+```bat
+build_exe.bat
+```
+
+### 手動コマンドでビルドする場合
+
+spec を使わない場合は、`--collect-all` で reportlab / PIL を取り込んでください。
+
+```bat
+python -m PyInstaller --noconfirm --clean --onefile --windowed ^
+  --name PatentdocConv ^
+  --paths src ^
+  --collect-all reportlab ^
+  --collect-submodules PIL ^
+  --add-data "src\patentdoc_conv\assets;patentdoc_conv\assets" ^
+  src\patentdoc_conv\__main__.py
+```
+
+アイコンを付ける場合は `--icon src\patentdoc_conv\assets\app.ico` を追加してください。
+
+### 出力先
+
+```text
+dist\PatentdocConv.exe
+```
+
+`--windowed` を付けているので、ダブルクリックしても黒いコンソール画面は出ません。
+
+---
+
+## 6. 第三者への配布
+
+`dist\PatentdocConv.exe` を **そのまま 1 ファイルだけ** 渡せば配布完了です。
+配布先で Python のインストールは不要です。
+
+### 配布先 PC の前提条件
+
+| 項目 | 必要条件 |
+|---|---|
+| OS | Windows 10 / 11 (64-bit) |
+| Python | 不要 (exe に同梱) |
+| Chromium / ブラウザ | 不要 (PDF は ReportLab で生成) |
+| 日本語フォント | Windows 標準 (Yu Gothic / Meiryo / MS Gothic) のいずれか |
+| .NET / Visual C++ ランタイム | 通常の Windows なら追加不要 |
+
+`__main__.py` は **絶対 import** で書いてあるため、PyInstaller の onefile 化や
+`__main__.py` の直接実行でも `ImportError: attempted relative import with no known parent package`
+は発生しません。
+
+### 動作確認のチェックリスト (配布前)
+
+- [ ] `dist\PatentdocConv.exe` をダブルクリックして GUI が起動する
+- [ ] 黒いコンソールウィンドウが表示されない (`--windowed`)
+- [ ] TXT/IMG を含むフォルダを指定して **実行** で HTML 生成成功
+- [ ] PDF が生成され、日本語が文字化けしない
+- [ ] 画像入り PDF が生成される
+- [ ] Chromium 等の追加インストールを要求されない
+
+---
+
+## 7. アンインストール
+
+開発環境を消したい場合:
+
+```bat
+python -m pip uninstall patentdoc-conv
+```
+
+配布先 (exe のみ) では、`PatentdocConv.exe` を削除するだけで完了です。
+
+---
+
+## 8. 主な機能
+
+### テキストビューア (HTML)
+
+- 6 色キーワードハイライト、手動マーカー、メモ
+- 自動目次、段落ジャンプ、しおり、文中検索
+- 表示設定（フォント / 行間 / 幅 / ダークモード / 紙モード）
+- ショートカット一覧: `?`
+
+### 図面ビューア (HTML)
+
+- ペン / 蛍光ペン / 直線 / 矩形 / 楕円 / 矢印 / テキスト
+- Undo / Redo、PNG 保存、JSON 書き出し / 読み込み
+- ダーク反転表示
+- ショートカット一覧: `?`
+
+### PDF (ReportLab 直接生成)
+
+- A4 縦、適切な余白、ページ番号、タイトル表示
+- 日本語テキストの折り返し / 複数ページ対応
+- 画像はページ幅に合わせて縮小、縦横比維持
+- TXT ごと / IMG ごとに 1 つの PDF を生成
+
+---
+
+## 9. トラブルシューティング
+
+| 症状 | 対処 |
+|---|---|
+| `ImportError: attempted relative import with no known parent package` | `__main__.py` が絶対 import になっているか確認 (現行版では修正済み) |
+| PDF に日本語が表示されない | Windows フォント (Yu Gothic / Meiryo / MS Gothic) が必要です |
+| `pip install -e .` が失敗する | `python -m pip install --upgrade pip` 後に再実行 |
+| exe ダブルクリック後にウィンドウが出ない | `--windowed` を外して再ビルドし、コンソールにエラーを出して確認 |
+| HTML のスタイルが当たらない | `--add-data "src\patentdoc_conv\assets;patentdoc_conv\assets"` の指定漏れを確認 |
+| `ModuleNotFoundError: reportlab.xxx` (exe 実行時) | spec / `--collect-all reportlab` でビルドする |
+| `ModuleNotFoundError: PIL.xxx` (exe 実行時) | spec / `--collect-submodules PIL` でビルドする |
+| PDF 出力先に書き込めない | 出力フォルダに書き込み権限があるか確認 |
+
+---
+
+## 10. 重要な設計方針 (開発者向け)
+
+> **PDF 生成のためにブラウザエンジンを後からインストールさせる方式は採用していません。**
+> HTML 表示用の処理 (`html_generator.py`) と PDF 生成用の処理 (`pdf_generator.py`)
+> は分離されており、PDF は ReportLab で直接生成されます。
+> Playwright / Chromium / Selenium などの依存を再導入しないでください。
+
+> **`__main__.py` の import は絶対 import を維持してください。**
+> 相対 import に戻すと PyInstaller での onefile ビルドが
+> `ImportError: attempted relative import with no known parent package`
+> で失敗します。

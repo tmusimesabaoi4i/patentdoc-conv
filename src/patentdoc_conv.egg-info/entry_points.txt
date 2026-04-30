@@ -1,0 +1,2 @@
+[gui_scripts]
+patentdoc-conv = patentdoc_conv.gui.main_window:main
