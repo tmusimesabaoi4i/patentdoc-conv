@@ -1,4 +1,0 @@
-pillow>=10.0
-playwright>=1.40
-
-[gui]
